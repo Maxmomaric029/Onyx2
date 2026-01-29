@@ -41,16 +41,17 @@ jobs:
           
           CLEAN_DIR="tweak_build"
           mv "$ORIGINAL_DIR" "$CLEAN_DIR"
-          
-          echo "Building in $CLEAN_DIR"
           cd "$CLEAN_DIR"
           
           perl -pi -e 's|/var/theos/|\$(THEOS)/|g' Makefile
           
           make all FINALPACKAGE=1 THEOS=~/theos
           
+          # Copiar el dylib a la raíz para que Actions lo encuentre fácilmente
+          find .theos/obj -name "*.dylib" -exec cp {} ../FF.dylib \;
+          
       - name: Upload Dylib Artifact
         uses: actions/upload-artifact@v4
         with:
           name: FF_Cheat_Dylib
-          path: "**/*.dylib"
+          path: FF.dylib
