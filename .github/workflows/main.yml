@@ -13,29 +13,36 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
+      - name: Install Dependencies
+        run: |
+          brew install ldid xz
+
       - name: Setup Theos
         run: |
-          bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
+          git clone --recursive https://github.com/theos/theos.git ~/theos
           echo "THEOS=~/theos" >> $GITHUB_ENV
           echo "~/theos/bin" >> $GITHUB_PATH
 
       - name: Setup iOS SDK
         run: |
-          rm -rf ~/theos/sdks
           git clone --depth 1 https://github.com/theos/sdks.git ~/theos/sdks
 
       - name: Build Tweak
         run: |
           export THEOS=~/theos
           MAKEFILE_PATH=$(find . -name "Makefile" -maxdepth 3 | head -n 1)
+          if [ -z "$MAKEFILE_PATH" ]; then
+            echo "Error: No se encontró el Makefile"
+            exit 1
+          fi
           MAKEFILE_DIR=$(dirname "$MAKEFILE_PATH")
-          echo "Building in $MAKEFILE_DIR"
+          echo "Compilando en: $MAKEFILE_DIR"
           cd "$MAKEFILE_DIR"
-          make clean all FINALPACKAGE=1
+          make all FINALPACKAGE=1
 
       - name: Upload Dylib Artifact
         uses: actions/upload-artifact@v4
