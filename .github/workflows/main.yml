@@ -36,18 +36,16 @@ jobs:
       - name: Build Tweak
         run: |
           export THEOS=~/theos
-          MAKEFILE_PATH=$(find . -name "Makefile" -maxdepth 3 | head -n 1)
-          if [ -z "$MAKEFILE_PATH" ]; then
-            echo "Error: No se encontró el Makefile"
-            exit 1
-          fi
-          MAKEFILE_DIR=$(dirname "$MAKEFILE_PATH")
-          cd "$MAKEFILE_DIR"
+          ORIGINAL_PATH=$(find . -name "Makefile" -maxdepth 3 | head -n 1)
+          ORIGINAL_DIR=$(dirname "$ORIGINAL_PATH")
+          
+          CLEAN_DIR="tweak_build"
+          mv "$ORIGINAL_DIR" "$CLEAN_DIR"
+          
+          echo "Building in $CLEAN_DIR"
+          cd "$CLEAN_DIR"
           
           perl -pi -e 's|/var/theos/|\$(THEOS)/|g' Makefile
-          
-          echo "--- Verificando Makefile ---"
-          cat Makefile
           
           make all FINALPACKAGE=1 THEOS=~/theos
           
