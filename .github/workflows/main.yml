@@ -42,14 +42,17 @@ jobs:
             exit 1
           fi
           MAKEFILE_DIR=$(dirname "$MAKEFILE_PATH")
-          echo "Compilando en: $MAKEFILE_DIR"
           cd "$MAKEFILE_DIR"
-          make all FINALPACKAGE=1
-
+          
+          perl -pi -e 's|/var/theos/|\$(THEOS)/|g' Makefile
+          
+          echo "--- Verificando Makefile ---"
+          cat Makefile
+          
+          make all FINALPACKAGE=1 THEOS=~/theos
+          
       - name: Upload Dylib Artifact
         uses: actions/upload-artifact@v4
         with:
           name: FF_Cheat_Dylib
-          path: |
-            **/FF.dylib
-            !.theos/**
+          path: "**/*.dylib"
