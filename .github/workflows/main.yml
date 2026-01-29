@@ -1,12 +1,9 @@
-name: Build and Inject IPA
+name: Build Dylib
 
 on:
+  push:
+    branches: [ main, master ]
   workflow_dispatch:
-    inputs:
-      ipa_url:
-        description: 'URL del IPA original (desencriptado)'
-        required: true
-        default: ''
 
 jobs:
   build:
@@ -34,25 +31,10 @@ jobs:
       - name: Build Tweak
         run: |
           export THEOS=~/theos
-          make clean package FINALPACKAGE=1
+          make clean all FINALPACKAGE=1
 
-      - name: Install Azule
-        run: |
-          git clone https://github.com/Al4ise/Azule ~/Azule
-          sudo ln -sf ~/Azule/azule /usr/local/bin/azule
-
-      - name: Download Original IPA
-        run: |
-          curl -L "${{ github.event.inputs.ipa_url }}" -o original.ipa
-
-      - name: Inject Dylib into IPA
-        run: |
-          # Buscamos el dylib generado en .theos/obj/debug o .theos/obj/install
-          DYLIB_PATH=$(find .theos/obj -name "FF.dylib" | head -n 1)
-          azule -i original.ipa -o injected.ipa -f $DYLIB_PATH
-
-      - name: Upload Resulting IPA
-        uses: actions/upload-artifact@v3
+      - name: Upload Dylib Artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: Injected_Game_IPA
-          path: injected.ipa
+          name: FF_Cheat_Dylib
+          path: .theos/obj/arm64/FF.dylib
