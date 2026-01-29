@@ -23,18 +23,23 @@ jobs:
 
       - name: Setup iOS SDK
         run: |
-          mkdir -p ~/theos/sdks
-          curl -L https://github.com/theos/sdks/raw/master/iPhoneOS14.5.sdk.tar.xz -o ~/theos/sdks/iPhoneOS14.5.sdk.tar.xz
-          tar -xf ~/theos/sdks/iPhoneOS14.5.sdk.tar.xz -C ~/theos/sdks/
-          rm ~/theos/sdks/iPhoneOS14.5.sdk.tar.xz
+          # Clonar solo los SDKs necesarios para ahorrar tiempo
+          git clone --depth 1 https://github.com/theos/sdks.git ~/theos/sdks
 
       - name: Build Tweak
         run: |
           export THEOS=~/theos
+          # Buscar donde está el Makefile por si la carpeta está anidada
+          MAKEFILE_PATH=$(find . -name "Makefile" -maxdepth 2 | head -n 1)
+          MAKEFILE_DIR=$(dirname "$MAKEFILE_PATH")
+          echo "Building in $MAKEFILE_DIR"
+          cd "$MAKEFILE_DIR"
           make clean all FINALPACKAGE=1
 
       - name: Upload Dylib Artifact
         uses: actions/upload-artifact@v4
         with:
           name: FF_Cheat_Dylib
-          path: .theos/obj/arm64/FF.dylib
+          path: |
+            **/FF.dylib
+            !.theos/obj/*
